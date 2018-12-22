@@ -2,6 +2,8 @@
 
 namespace Vtiful\Framework\Lumen;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Facade;
 use Laravel\Lumen\Application as LumenApplication;
 use Vtiful\Framework\Framework as FrameworkAbstract;
 
@@ -38,23 +40,48 @@ class Framework extends FrameworkAbstract
      */
     public function instance()
     {
-        return clone static::$application;
+        $instance = clone static::$application;
+
+        self::clean($instance);
+
+        return $instance;
     }
 
     /**
+     * @param LumenApplication $instance
+     *
      * @return void
      */
-    public static function reset()
+    public static function reset($instance)
     {
         // return;
     }
 
     /**
+     * @param LumenApplication $instance
+     *
      * @return void
      */
-    public static function clean()
+    public static function clean($instance)
     {
-        // return;
+        /* @var $request Request */
+        $request = $instance->make('request');
+
+        if ($request->hasSession()) {
+            $session = $request->getSession();
+
+            if (method_exists($session, 'clear')) {
+                $session->clear();
+            }
+
+            if (method_exists($session, 'flush')) {
+                $session->flush();
+            }
+        }
+
+        $instance->forgetInstance('request');
+
+        Facade::clearResolvedInstance('request');
     }
 
     /**

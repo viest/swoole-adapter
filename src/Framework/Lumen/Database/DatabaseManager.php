@@ -21,4 +21,18 @@ class DatabaseManager extends IlluminateDatabaseManager
     {
         parent::__construct($app, $factory);
     }
+
+    /**
+     * Get Connection
+     *
+     * @param null $name
+     *
+     * @return \Illuminate\Database\Connection
+     */
+    public function connection($name = null)
+    {
+        list($database, $type) = $this->parseConnectionName($name);
+
+        return $this->configure($this->makeConnection($database), $type);
+    }
 }

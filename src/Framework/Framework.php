@@ -15,16 +15,18 @@ abstract class Framework
     abstract static function initialization(string $basePath, array $config);
 
     /**
+     * @param mixed $instance
+     *
      * @return void
      */
-    abstract static function reset();
+    abstract static function reset($instance);
 
     /**
      * Clean Instance
      *
      * @return void
      */
-    abstract static function clean();
+    abstract static function clean($instance);
 
     /**
      * Replace Framework Module

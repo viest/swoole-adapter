@@ -2,7 +2,7 @@
 
 namespace Vtiful;
 
-use \Swoole\Http\Server;
+use Swoole\Http\Server;
 use Vtiful\Framework\Factory;
 use Vtiful\Framework\Framework;
 
@@ -67,6 +67,7 @@ class Application
         $this->server->on('WorkerStart', [$this, 'onWorkerStart']);
         $this->server->on('WorkerStop', [$this, 'onWorkerStop']);
         $this->server->on('WorkerError', [$this, 'onWorkerError']);
+        $this->server->on('WorkerExit', [$this, 'onWorkerExit']);
         $this->server->on('PipeMessage', [$this, 'onPipeMessage']);
         $this->server->on('Request', [$this, 'onRequest']);
     }

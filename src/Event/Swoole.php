@@ -2,6 +2,7 @@
 
 namespace Vtiful\Event;
 
+use Swoole\Coroutine;
 use Swoole\Http\Server;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -143,6 +144,25 @@ trait Swoole
     public function onWorkerError(Server $server, int $workerId, int $workerPId, int $exitCode, int $signal): void
     {
         $this->log(sprintf('worker[%d] error: exitCode=%s, signal=%s', $workerId, $exitCode, $signal), 'ERROR');
+    }
+
+    /**
+     * Event Work Exit
+     *
+     * @param Server $server
+     * @param int    $workerId
+     *
+     * @return void
+     */
+    public function onWorkerExit(Server $server, int $workerId): void
+    {
+        $corcutineStats        = Coroutine::stats();
+        $corcutineOnlineNumber = $corcutineStats['coroutine_num'] ?? 0;
+
+        // All corcutine go offline and manually exit the progress process
+        if ($corcutineOnlineNumber === 0) {
+            posix_kill(getmypid(), SIGKILL);
+        }
     }
 
     /**

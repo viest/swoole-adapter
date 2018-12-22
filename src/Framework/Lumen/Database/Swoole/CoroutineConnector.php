@@ -5,7 +5,6 @@ namespace Vtiful\Framework\Lumen\Database\Swoole;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Connectors\Connector;
 use Illuminate\Database\Connectors\ConnectorInterface;
 
@@ -69,8 +68,6 @@ class CoroutineConnector extends Connector implements ConnectorInterface
     public function connect(array $config)
     {
         $connection = new PDO();
-
-        Log::info('connection');
 
         $connection->connect([
             'host'        => Arr::get($config, 'host', '127.0.0.1'),
