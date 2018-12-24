@@ -2,10 +2,13 @@
 
 namespace Vtiful\Event;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Debug\HtmlDumper;
 use Swoole\Coroutine;
 use Swoole\Http\Server;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Vtiful\Request\RequestFactory;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -207,10 +210,22 @@ trait Swoole
             $content = (string)$illuminateResponse;
         }
 
+        $outputBuffer = ob_get_contents();
+
         ob_end_clean();
 
         if (isset($content[0])) {
-            $response->end($content);
+            foreach ($illuminateResponse->headers->allPreserveCaseWithoutCookies() as $name => $values) {
+                foreach ($values as $value) {
+                    $response->header($name, $value);
+                }
+            }
+
+            if (strlen($outputBuffer) > 0) {
+                $response->header('Content-Type', 'text/html');
+            }
+
+            $response->end( $outputBuffer . $content);
         }
     }
 

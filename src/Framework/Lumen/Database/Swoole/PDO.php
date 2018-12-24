@@ -80,9 +80,9 @@ class PDO extends CorePDO
      */
     protected function initPool(array $config)
     {
-        self::$pool = new Channel(100);
+        self::$pool = new Channel(70);
 
-        for ($count = 0; $count < 100; $count++) {
+        for ($count = 0; $count < 70; $count++) {
             self::$pool->push($this->createConnection($config));
         }
     }
