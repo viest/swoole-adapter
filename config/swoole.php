@@ -6,9 +6,22 @@ return [
     'base_path' => realpath(__DIR__ . '/../'),
     'framework' => 'lumen',
 
-    // 变量重置
-    'reset' => [
+    'common' => [
+        'reset' => [
 
+        ],
+        'database' => [
+            'host'             => '127.0.0.1',
+            'port'             => 3306,
+            'user'             => 'root',
+            'password'         => 'root',
+            'database'         => 'ctmpay_api',
+            'timeout'          => 0.5,
+            'charset'          => 'utf8mb4',
+            'strict_type'      => true,
+            'pool_depth'       => 50,
+            'pool_get_timeout' => 0.5,
+        ],
     ],
 
     'swoole' => [

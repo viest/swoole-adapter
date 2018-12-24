@@ -3,24 +3,14 @@
 namespace Vtiful\Framework\Lumen\Database\Swoole;
 
 use PDO as CorePDO;
-use \Swoole\Coroutine\Channel;
+use Vtiful\Pool\MysqlPool;
 use Illuminate\Database\QueryException;
 use Swoole\Coroutine\MySQL as SwooleMySQL;
-use Vtiful\Framework\Lumen\Exception\ConnectionException;
 use Vtiful\Framework\Lumen\Exception\StatementException;
+use Vtiful\Framework\Lumen\Exception\ConnectionException;
 
 class PDO extends CorePDO
 {
-    /**
-     * @var Channel
-     */
-    protected static $pool;
-
-    /**
-     * @var array
-     */
-    protected static $config;
-
     /**
      * @var SwooleMySQL
      */
@@ -40,94 +30,17 @@ class PDO extends CorePDO
     }
 
     /**
-     * PDO destruct
-     */
-    public function __destruct()
-    {
-        if (self::$pool->isFull()) {
-            $this->currentConnect->close();
-
-            return;
-        }
-
-        self::$pool->push($this->currentConnect);
-    }
-
-    /**
      * Connect
      *
      * @param array $config
      *
-     * @throws ConnectionException
+     * @throws \Exception
      */
     public function connect(array $config)
     {
-        if (self::$pool === NULL) {
-            $this->initPool($config);
-        }
+        $pool = MysqlPool::getInstance();
 
-        self::$config = $config;
-
-        $this->currentConnect = $this->getConnect();
-    }
-
-    /**
-     * Init Pool
-     *
-     * @param array $config
-     *
-     * @throws ConnectionException
-     */
-    protected function initPool(array $config)
-    {
-        self::$pool = new Channel(70);
-
-        for ($count = 0; $count < 70; $count++) {
-            self::$pool->push($this->createConnection($config));
-        }
-    }
-
-    /**
-     * Create Connection
-     *
-     * @param array $config
-     *
-     * @return SwooleMySQL
-     * @throws ConnectionException
-     */
-    protected function createConnection(array $config)
-    {
-        $connection = new SwooleMySQL();
-
-        $connection->connect($config);
-
-        if (!object_get($connection, 'connected') || $connection === NULL) {
-            $msg = sprintf(
-                'Cannot connect to the database: %s',
-                object_get($connection, 'connect_error')
-            );
-
-            throw new ConnectionException(
-                $msg, object_get($connection, 'connect_errno')
-            );
-        }
-
-        return $connection;
-    }
-
-    /**
-     * Get Connection
-     *
-     * @return SwooleMySQL
-     * @throws ConnectionException
-     */
-    protected function getConnect()
-    {
-        if (self::$pool->isEmpty()) {
-            return $this->createConnection(self::$config);
-        }
-
-        return self::$pool->pop();
+        $this->currentConnect = $pool->connection();
     }
 
     /**
@@ -144,12 +57,13 @@ class PDO extends CorePDO
         $swStatement = $this->currentConnect->prepare($statement);
 
         if (!$swStatement) {
+            if (!$this->currentConnect->connected) {
+                $this->currentConnect = MysqlPool::getInstance()->createConnection(true);
+                $this->prepare($statement, $options);
+            }
+
             $errorCode = $this->currentConnect->errno;
             $errorMess = $this->currentConnect->error;
-
-            if (!$this->currentConnect->connected) {
-                $this->currentConnect = $this->createConnection(self::$config);
-            }
 
             throw new QueryException(
                 $statement, [], new StatementException($errorMess, $errorCode)
@@ -210,12 +124,13 @@ class PDO extends CorePDO
         );
 
         if (!$result) {
+            if (!$this->currentConnect->connected) {
+                $this->currentConnect = MysqlPool::getInstance()->createConnection(true);
+                $this->query($statement, $mode, $arg3, $ctorargs);
+            }
+
             $errorCode = $this->currentConnect->errno;
             $errorMess = $this->currentConnect->error;
-
-            if (!$this->currentConnect->connected) {
-                $this->currentConnect = $this->createConnection(self::$config);
-            }
 
             throw new QueryException(
                 $statement, [], new \Exception($errorMess, $errorCode)

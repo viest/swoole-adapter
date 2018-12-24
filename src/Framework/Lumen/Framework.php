@@ -9,6 +9,7 @@ use Laravel\Lumen\Application as LumenApplication;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\VarDumper;
 use Vtiful\Framework\Framework as FrameworkAbstract;
+use Vtiful\Framework\Lumen\Database\Swoole\PDO;
 
 class Framework extends FrameworkAbstract
 {
@@ -16,6 +17,11 @@ class Framework extends FrameworkAbstract
      * @var LumenApplication
      */
     static $application;
+
+    /**
+     * @var array
+     */
+    static $config;
 
     /**
      * Lumen constructor.
@@ -28,6 +34,7 @@ class Framework extends FrameworkAbstract
     public static function initialization(string $applicationEntrancePath, array $config)
     {
         static::$application = require $applicationEntrancePath . '/bootstrap/app.php';
+        static::$config      = $config;
 
         static::replace();
 
@@ -94,6 +101,11 @@ class Framework extends FrameworkAbstract
      */
     public static function replace()
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Dumper
+        |--------------------------------------------------------------------------
+        */
         $cloner = new VarCloner();
         $dumper = new HtmlDumper();
 
@@ -102,6 +114,11 @@ class Framework extends FrameworkAbstract
             $dumper->dump($data);
         });
 
+        /*
+        |--------------------------------------------------------------------------
+        | Database
+        |--------------------------------------------------------------------------
+        */
         static::$application->register(\Vtiful\Framework\Lumen\Database\ServiceProvider\Mysql::class);
     }
 }

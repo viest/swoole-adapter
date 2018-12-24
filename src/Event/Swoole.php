@@ -2,23 +2,33 @@
 
 namespace Vtiful\Event;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Debug\HtmlDumper;
 use Swoole\Coroutine;
 use Swoole\Http\Server;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
-use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Vtiful\Pool\MysqlPool;
 use Vtiful\Request\RequestFactory;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Trait Swoole
+ * Class Swoole
  *
  * @package Vtiful\Event
  */
-trait Swoole
+class Swoole
 {
+    public $config;
+
+    /**
+     * Swoole constructor.
+     *
+     * @param array $config
+     */
+    public function __construct(array $config)
+    {
+        $this->config = $config;
+    }
+
     /**
      * Set Process Name
      *
@@ -106,6 +116,7 @@ trait Swoole
      * @param int    $workerId
      *
      * @return void
+     * @throws \Vtiful\Framework\Lumen\Exception\ConnectionException
      */
     public function onWorkerStart(Server $server, int $workerId): void
     {
@@ -118,6 +129,8 @@ trait Swoole
         }
 
         clearstatcache();
+
+        MysqlPool::init($this->config['common']['database'] ?? []);
     }
 
     /**

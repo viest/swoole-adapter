@@ -3,6 +3,7 @@
 namespace Vtiful;
 
 use Swoole\Http\Server;
+use Vtiful\Event\Swoole;
 use Vtiful\Framework\Factory;
 use Vtiful\Framework\Framework;
 
@@ -11,15 +12,8 @@ use Vtiful\Framework\Framework;
  *
  * @package Vtiful
  */
-class Application
+class Application extends Swoole
 {
-    use Event\Swoole;
-
-    /**
-     * @var array
-     */
-    protected $config;
-
     /**
      * @var Server
      */
@@ -29,16 +23,6 @@ class Application
      * @var Framework
      */
     protected $applicationFactory;
-
-    /**
-     * Application constructor.
-     *
-     * @param $config
-     */
-    public function __construct($config)
-    {
-        $this->config = $config;
-    }
 
     /**
      * Create Http Server
@@ -94,7 +78,7 @@ class Application
         $this->applicationFactory = Factory::init(
             $this->config['framework'],
             $this->config['base_path'],
-            $this->config['reset']
+            $this->config['common']
         );
     }
 
@@ -108,7 +92,7 @@ class Application
      */
     public function log($msg, $type = 'INFO')
     {
-        echo sprintf('[%s] [%s] LaravelS: %s', date('Y-m-d H:i:s'), $type, $msg), PHP_EOL;
+        echo sprintf('[%s] [%s] Swoole: %s', date('Y-m-d H:i:s'), $type, $msg), PHP_EOL;
     }
 
     /**
