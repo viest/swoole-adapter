@@ -22,13 +22,16 @@ return [
             'pool_depth'       => 50,
             'pool_get_timeout' => 0.5,
         ],
+        'timer' => [
+            ['class' => 'namespace', 'ms' => 1000],
+        ]
     ],
 
     'swoole' => [
         'daemonize'          => env('DAEMONIZE', false),
         'dispatch_mode'      => 1,
-        'reactor_num'        => 1,
-        'worker_num'         => 1,
+        'reactor_num'        => swoole_cpu_num() * 2,
+        'worker_num'         => swoole_cpu_num() * 2,
         //'task_worker_num'   => function_exists('\swoole_cpu_num') ? \swoole_cpu_num() * 2 : 8,
         'task_ipc_mode'      => 1,
         'task_max_request'   => 5000,

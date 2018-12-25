@@ -4,6 +4,7 @@ namespace Vtiful;
 
 use Swoole\Http\Server;
 use Vtiful\Event\Swoole;
+use Vtiful\Event\Timer;
 use Vtiful\Framework\Factory;
 use Vtiful\Framework\Framework;
 
@@ -54,6 +55,17 @@ class Application extends Swoole
         $this->server->on('WorkerExit', [$this, 'onWorkerExit']);
         $this->server->on('PipeMessage', [$this, 'onPipeMessage']);
         $this->server->on('Request', [$this, 'onRequest']);
+    }
+
+    /**
+     * Bind Timer
+     *
+     * @return void
+     */
+    protected function bindTimer(): void
+    {
+        $timerManager = new Timer();
+        $timerManager->init($this->server, $this->config['common']['timer']);
     }
 
     /**
@@ -108,6 +120,7 @@ class Application extends Swoole
 
         $this->createServer();
         $this->bindEvent();
+        $this->bindTimer();
 
         $this->start();
     }
