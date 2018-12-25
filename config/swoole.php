@@ -28,7 +28,7 @@ return [
     ],
 
     'swoole' => [
-        'daemonize'          => env('DAEMONIZE', false),
+        'daemonize'          => false,
         'dispatch_mode'      => 1,
         'reactor_num'        => swoole_cpu_num() * 2,
         'worker_num'         => swoole_cpu_num() * 2,
